@@ -1,0 +1,195 @@
+{
+  "type": "File",
+  "start": 0,
+  "end": 30,
+  "loc": {
+    "start": {
+      "line": 1,
+      "column": 0
+    },
+    "end": {
+      "line": 1,
+      "column": 30
+    }
+  },
+  "program": {
+    "type": "Program",
+    "start": 0,
+    "end": 30,
+    "loc": {
+      "start": {
+        "line": 1,
+        "column": 0
+      },
+      "end": {
+        "line": 1,
+        "column": 30
+      }
+    },
+    "sourceType": "module",
+    "body": [{
+      "type": "ExpressionStatement",
+      "start": 0,
+      "end": 30,
+      "loc": {
+        "start": {
+          "line": 1,
+          "column": 0
+        },
+        "end": {
+          "line": 1,
+          "column": 30
+        }
+      },
+      "expression": {
+        "type": "CallExpression",
+        "start": 0,
+        "end": 30,
+        "loc": {
+          "start": {
+            "line": 1,
+            "column": 0
+          },
+          "end": {
+            "line": 1,
+            "column": 30
+          }
+        },
+        "callee": {
+          "type": "Identifier",
+          "start": 0,
+          "end": 6,
+          "loc": {
+            "start": {
+              "line": 1,
+              "column": 0
+            },
+            "end": {
+              "line": 1,
+              "column": 6
+            },
+            "identifierName": "method"
+          },
+          "name": "method"
+        },
+        "arguments": [{
+          "type": "ObjectExpression",
+          "start": 7,
+          "end": 29,
+          "loc": {
+            "start": {
+              "line": 1,
+              "column": 7
+            },
+            "end": {
+              "line": 1,
+              "column": 29
+            }
+          },
+          "properties": [{
+            "type": "ObjectProperty",
+            "start": 8,
+            "end": 28,
+            "loc": {
+              "start": {
+                "line": 1,
+                "column": 8
+              },
+              "end": {
+                "line": 1,
+                "column": 28
+              }
+            },
+            "method": false,
+            "shorthand": false,
+            "computed": false,
+            "key": {
+              "type": "Identifier",
+              "start": 8,
+              "end": 11,
+              "loc": {
+                "start": {
+                  "line": 1,
+                  "column": 8
+                },
+                "end": {
+                  "line": 1,
+                  "column": 11
+                },
+                "identifierName": "key"
+              },
+              "name": "key"
+            },
+            "value": {
+              "type": "TypeCastExpression",
+              "start": 14,
+              "end": 27,
+              "loc": {
+                "start": {
+                  "line": 1,
+                  "column": 14
+                },
+                "end": {
+                  "line": 1,
+                  "column": 27
+                }
+              },
+              "expression": {
+                "type": "Identifier",
+                "start": 14,
+                "end": 19,
+                "loc": {
+                  "start": {
+                    "line": 1,
+                    "column": 14
+                  },
+                  "end": {
+                    "line": 1,
+                    "column": 19
+                  },
+                  "identifierName": "value"
+                },
+                "name": "value"
+              },
+              "typeAnnotation": {
+                "type": "TypeAnnotation",
+                "start": 19,
+                "end": 27,
+                "loc": {
+                  "start": {
+                    "line": 1,
+                    "column": 19
+                  },
+                  "end": {
+                    "line": 1,
+                    "column": 27
+                  }
+                },
+                "typeAnnotation": {
+                  "type": "StringTypeAnnotation",
+                  "start": 21,
+                  "end": 27,
+                  "loc": {
+                    "start": {
+                      "line": 1,
+                      "column": 21
+                    },
+                    "end": {
+                      "line": 1,
+                      "column": 27
+                    }
+                  }
+                }
+              },
+              "extra": {
+                "parenthesized": true,
+                "parenStart": 13
+              }
+            }
+          }]
+        }]
+      }
+    }],
+    "directives": []
+  }
+}

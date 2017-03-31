@@ -949,7 +949,6 @@ export default function (instance) {
       if (this.eat(tt.question)) {
         node.optional = true;
       }
-
       if (this.match(tt.colon)) {
         const typeCastNode = this.startNodeAt(startPos, startLoc);
         typeCastNode.expression = node;
@@ -1077,13 +1076,17 @@ export default function (instance) {
     };
   });
 
-  // parse an item inside a expression list eg. `(NODE, NODE)` where NODE represents
-  // the position where this function is called
+  // parse an item inside a expression list, the type cast expression is expected to be
+  // wrraped with parentheses
   instance.extend("parseExprListItem", function (inner) {
     return function (...args) {
-      const container = this.startNode();
+      const withParenthesis = this.match(tt.parenL);
       const node = inner.call(this, ...args);
       if (this.match(tt.colon)) {
+        if (!withParenthesis) {
+          this.raise(node.start, "The type cast expression is expected to be wrapped with parenthesis");
+        }
+        const container = this.startNode();
         container._exprListItem = true;
         container.expression = node;
         container.typeAnnotation = this.flowParseTypeAnnotation();
@@ -1328,8 +1331,8 @@ export default function (instance) {
     };
   });
 
-  // parse the return type of an async arrow function - let foo = (async (): number => {});
-  instance.extend("parseAsyncArrowFromCallExpression", function (inner) {
+  // parse the return type of an async arrow function - let foo = async (): number => {};
+  instance.extend("parseAsyncArrowExpression", function (inner) {
     return function (node, call) {
       if (this.match(tt.colon)) {
         const oldNoAnonFunctionType = this.state.noAnonFunctionType;
@@ -1339,6 +1342,33 @@ export default function (instance) {
       }
 
       return inner.call(this, node, call);
+    };
+  });
+
+  // check whether the expression is an async arrow function - let foo = async (): number => {};
+  instance.extend("checkIsAsyncArrowExpression", function (inner) {
+    return function (base) {
+      const previous = inner.call(this, base);
+      if (!previous) {
+        if (
+          this.state.potentialArrowAt !== base.start ||
+          base.type !== "Identifier" ||
+          base.name !== "async" ||
+          this.canInsertSemicolon()
+        ) {
+          return false;
+        }
+        if (this.match(tt.colon)) {
+          const oldNoAnonFunctionType = this.state.noAnonFunctionType;
+          this.state.noAnonFunctionType = true;
+          this.flowParseTypeAnnotation();
+          this.state.noAnonFunctionType = oldNoAnonFunctionType;
+          if (this.match(tt.arrow)) {
+            return true;
+          }
+        }
+      }
+      return previous;
     };
   });
 
