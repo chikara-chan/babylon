@@ -110,7 +110,11 @@ pp.parseSpread = function (refShorthandDefaultPos) {
 pp.parseRest = function () {
   const node = this.startNode();
   this.next();
-  node.argument = this.parseBindingIdentifier();
+  if (this.state.type === tt.braceL) {
+    node.argument = this.parseObj(true);
+  } else {
+    node.argument = this.parseBindingIdentifier();
+  }
   return this.finishNode(node, "RestElement");
 };
 
