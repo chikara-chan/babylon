@@ -277,6 +277,31 @@ pp.parseExprSubscripts = function (refShorthandDefaultPos) {
   return this.parseSubscripts(expr, startPos, startLoc);
 };
 
+pp.checkIsAsyncArrowExpression = function(base) {
+  if (
+    this.state.potentialArrowAt !== base.start ||
+    base.type !== "Identifier" ||
+    base.name !== "async" ||
+    this.canInsertSemicolon()
+  ) {
+    return false;
+  }
+  const stack = [this.expect(tt.parenL)];
+  while (stack.length) {
+    if (this.eat(tt.parenL)) {
+      stack.push(this.state.type);
+    } else if (this.eat(tt.parenR)) {
+      stack.pop();
+    } else {
+      this.next();
+    }
+  }
+  if (this.match(tt.arrow)) {
+    return true;
+  }
+  return false;
+};
+
 pp.parseSubscripts = function (base, startPos, startLoc, noCalls) {
   for (;;) {
     if (!noCalls && this.eat(tt.doubleColon)) {
@@ -298,22 +323,23 @@ pp.parseSubscripts = function (base, startPos, startLoc, noCalls) {
       this.expect(tt.bracketR);
       base = this.finishNode(node, "MemberExpression");
     } else if (!noCalls && this.match(tt.parenL)) {
-      const possibleAsync = this.state.potentialArrowAt === base.start && base.type === "Identifier" && base.name === "async" && !this.canInsertSemicolon();
+      const old = this.state.clone(true);
+      if (this.checkIsAsyncArrowExpression(base)) {
+        this.state = old;
+        const node = this.startNodeAt(startPos, startLoc);
+        this.parseFunctionParams(node);
+        return this.parseAsyncArrowExpression(node, node.params);
+      }
+      this.state = old;
       this.next();
-
       const node = this.startNodeAt(startPos, startLoc);
       node.callee = base;
-      node.arguments = this.parseCallExpressionArguments(tt.parenR, possibleAsync);
+      node.arguments = this.parseCallExpressionArguments(tt.parenR, false);
       if (node.callee.type === "Import" && node.arguments.length !== 1) {
         this.raise(node.start, "import() requires exactly one argument");
       }
       base = this.finishNode(node, "CallExpression");
-
-      if (possibleAsync && this.shouldParseAsyncArrow()) {
-        return this.parseAsyncArrowFromCallExpression(this.startNodeAt(startPos, startLoc), node);
-      } else {
-        this.toReferencedList(node.arguments);
-      }
+      this.toReferencedList(node.arguments);
     } else if (this.match(tt.backQuote)) {
       const node = this.startNodeAt(startPos, startLoc);
       node.tag = base;
@@ -358,9 +384,9 @@ pp.shouldParseAsyncArrow = function () {
   return this.match(tt.arrow);
 };
 
-pp.parseAsyncArrowFromCallExpression = function (node, call) {
+pp.parseAsyncArrowExpression = function (node, args) {
   this.expect(tt.arrow);
-  return this.parseArrowExpression(node, call.arguments, true);
+  return this.parseArrowExpression(node, args, true);
 };
 
 // Parse a no-call expression (like argument of `new` or `::` operators).
@@ -416,10 +442,10 @@ pp.parseExprAtom = function (refShorthandDefaultPos) {
 
     case tt.name:
       node = this.startNode();
+
       const allowAwait = this.state.value === "await" && this.state.inAsync;
       const allowYield = this.shouldAllowYieldIdentifier();
       const id = this.parseIdentifier(allowAwait || allowYield);
-
       if (id.name === "await") {
         if (this.state.inAsync || this.inModule) {
           return this.parseAwait(node);
@@ -430,7 +456,7 @@ pp.parseExprAtom = function (refShorthandDefaultPos) {
       } else if (canBeArrow && id.name === "async" && this.match(tt.name)) {
         const params = [this.parseIdentifier()];
         this.expect(tt.arrow);
-        // let foo = bar => {};
+        // let foo = async bar => {};
         return this.parseArrowExpression(node, params, true);
       }
 
@@ -1043,8 +1069,10 @@ pp.parseExprListItem = function (allowEmpty, refShorthandDefaultPos, refNeedsArr
     elt = null;
   } else if (this.match(tt.ellipsis)) {
     elt = this.parseSpread(refShorthandDefaultPos);
-  } else {
+  } else if (this.match(tt.parenL)) {
     elt = this.parseMaybeAssign(false, refShorthandDefaultPos, this.parseParenItem, refNeedsArrowPos);
+  } else {
+    elt = this.parseMaybeAssign(false, refShorthandDefaultPos, null, refNeedsArrowPos);
   }
   return elt;
 };
