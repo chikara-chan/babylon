@@ -1,0 +1,1 @@
+method({key: (value: string)})
