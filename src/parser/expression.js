@@ -334,7 +334,7 @@ pp.parseSubscripts = function (base, startPos, startLoc, noCalls) {
       this.next();
       const node = this.startNodeAt(startPos, startLoc);
       node.callee = base;
-      node.arguments = this.parseCallExpressionArguments(tt.parenR, false);
+      node.arguments = this.parseCallExpressionArguments(tt.parenR);
       if (node.callee.type === "Import" && node.arguments.length !== 1) {
         this.raise(node.start, "import() requires exactly one argument");
       }
@@ -351,7 +351,7 @@ pp.parseSubscripts = function (base, startPos, startLoc, noCalls) {
   }
 };
 
-pp.parseCallExpressionArguments = function (close, possibleAsyncArrow) {
+pp.parseCallExpressionArguments = function (close) {
   const elts = [];
   let innerParenStart;
   let first = true;
@@ -369,19 +369,10 @@ pp.parseCallExpressionArguments = function (close, possibleAsyncArrow) {
       innerParenStart = this.state.start;
     }
 
-    elts.push(this.parseExprListItem(false, possibleAsyncArrow ? { start: 0 } : undefined, possibleAsyncArrow ? { start: 0 } : undefined));
-  }
-
-  // we found an async arrow function so let's not allow any inner parens
-  if (possibleAsyncArrow && innerParenStart && this.shouldParseAsyncArrow()) {
-    this.unexpected();
+    elts.push(this.parseExprListItem(false));
   }
 
   return elts;
-};
-
-pp.shouldParseAsyncArrow = function () {
-  return this.match(tt.arrow);
 };
 
 pp.parseAsyncArrowExpression = function (node, args) {
@@ -1063,16 +1054,16 @@ pp.parseExprList = function (close, allowEmpty, refShorthandDefaultPos) {
   return elts;
 };
 
-pp.parseExprListItem = function (allowEmpty, refShorthandDefaultPos, refNeedsArrowPos) {
+pp.parseExprListItem = function (allowEmpty, refShorthandDefaultPos) {
   let elt;
   if (allowEmpty && this.match(tt.comma)) {
     elt = null;
   } else if (this.match(tt.ellipsis)) {
     elt = this.parseSpread(refShorthandDefaultPos);
   } else if (this.match(tt.parenL)) {
-    elt = this.parseMaybeAssign(false, refShorthandDefaultPos, this.parseParenItem, refNeedsArrowPos);
+    elt = this.parseMaybeAssign(false, refShorthandDefaultPos, this.parseParenItem);
   } else {
-    elt = this.parseMaybeAssign(false, refShorthandDefaultPos, null, refNeedsArrowPos);
+    elt = this.parseMaybeAssign(false, refShorthandDefaultPos, null);
   }
   return elt;
 };

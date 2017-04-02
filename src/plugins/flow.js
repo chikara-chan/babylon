@@ -1372,13 +1372,6 @@ export default function (instance) {
     };
   });
 
-  // todo description
-  instance.extend("shouldParseAsyncArrow", function (inner) {
-    return function () {
-      return this.match(tt.colon) || inner.call(this);
-    };
-  });
-
   // We need to support type parameter declarations for arrow functions. This
   // is tricky. There are three situations we need to handle
   //
