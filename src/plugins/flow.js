@@ -1342,22 +1342,12 @@ export default function (instance) {
     return function (base) {
       const previous = inner.call(this, base);
       if (!previous) {
-        if (
-          this.state.potentialArrowAt !== base.start ||
-          base.type !== "Identifier" ||
-          base.name !== "async" ||
-          this.canInsertSemicolon()
-        ) {
-          return false;
-        }
         if (this.match(tt.colon)) {
           const oldNoAnonFunctionType = this.state.noAnonFunctionType;
           this.state.noAnonFunctionType = true;
           this.flowParseTypeAnnotation();
           this.state.noAnonFunctionType = oldNoAnonFunctionType;
-          if (this.match(tt.arrow)) {
-            return true;
-          }
+          return true;
         }
       }
       return previous;
