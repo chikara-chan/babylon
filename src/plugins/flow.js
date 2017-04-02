@@ -1080,17 +1080,9 @@ export default function (instance) {
   // wrraped with parentheses
   instance.extend("parseExprListItem", function (inner) {
     return function (...args) {
-      const withParenthesis = this.match(tt.parenL);
       const node = inner.call(this, ...args);
       if (this.match(tt.colon)) {
-        if (!withParenthesis) {
-          this.raise(node.start, "The type cast expression is expected to be wrapped with parenthesis");
-        }
-        const container = this.startNode();
-        container._exprListItem = true;
-        container.expression = node;
-        container.typeAnnotation = this.flowParseTypeAnnotation();
-        return this.finishNode(container, "TypeCastExpression");
+        this.raise(node.start, "The type cast expression is expected to be wrapped with parenthesis");
       } else {
         return node;
       }
